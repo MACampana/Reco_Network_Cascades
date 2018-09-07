@@ -7,20 +7,23 @@ from keras.models import Sequential, load_model
 import matplotlib.pylab as plt
 from keras import backend as K
 
-
+# Load Data Files (x = train, y = validate)
 x = np.load('M:/Test/save_x_all.npy')
 y = np.load('M:/Test/save_y_all_justE.npy')
 
 
 # =====================================================================================================================
+# For Reproducibility
 seed = 8
 np.random.seed(seed)
 
+# Set Constant Network Properties
 num_classes = 1 #1 for energy, 3 for energy/zenith/azimuth
 input_shape = (10, 10, 60, 7)
 epochs = 80
 batch_size = 5
 
+# Build Model
 K.set_image_data_format('channels_last')
 
 model = Sequential()
@@ -50,12 +53,13 @@ model.compile(loss=keras.losses.mean_squared_logarithmic_error,
 # keras.optimizers.SGD(lr=0.01,momentum=0.8,decay=0.1,nesterov=False)
 # keras.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
 
+# Save Model if better loss than previous Epoch
 filepath = 'M:/Test/Save_Model_Best'
 #model = load_model(filepath)
 chkpt = keras.callbacks.ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True,
                                         save_weights_only=False, mode='auto', period=1)
 
-
+# Fit Model and validate
 history = model.fit(x, y,
                     batch_size=batch_size,
                     epochs=epochs,
@@ -64,8 +68,10 @@ history = model.fit(x, y,
                     validation_split=.10,
                     callbacks=[chkpt])
 
+# Save final model version
 model.save('M:/Test/Saved_Model_End')
 
+# Plot Losses
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
 plt.title('Loss vs Epoch')
